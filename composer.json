@@ -25,11 +25,8 @@
   "require": {
     "php": ">= 7.0",
     "ext-filter": "*",
-    "ext-dom": "*",
     "ext-mbstring": "*",
     "ext-json": "*",
-    "ext-bcmath": "*",
-    "ext-hash": "*",
     "ext-intl": "*",
 
     "neitanod\/forceutf8": "dev-master",
