@@ -33,8 +33,7 @@ blob-domain and its dependencies require PHP 7+ with the following modules:
  * Filter
  * JSON
  * MBString
-
-The PHP extension INTL is required for Unicode domain support. Without it, only good ol' fashioned ASCII domains will be processed.
+ * INTL
 
 &nbsp;
 
