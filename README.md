@@ -25,7 +25,7 @@ blob-domain is a simple PHP library for parsing and validating domain names. It 
 
 ## Requirements
 
-blob-domain requires PHP 7+ with the following modules:
+blob-domain and its dependencies require PHP 7+ with the following modules:
 
  * BCMath
  * DOM
@@ -33,7 +33,6 @@ blob-domain requires PHP 7+ with the following modules:
  * Filter
  * JSON
  * MBString
- * SimpleXML
 
 The PHP extension INTL is required for Unicode domain support. Without it, only good ol' fashioned ASCII domains will be processed.
 
