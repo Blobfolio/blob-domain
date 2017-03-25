@@ -1,6 +1,6 @@
 # blob-domain
 
-A PHP library to help validate and parse domains.
+blob-domain is a simple PHP library for parsing and validating domain names. It supports the full [Public Suffix](https://publicsuffix.org/list/) ruleset, translates Unicode to ASCII or vice versa (if the PHP extension INTL is present), and can break down a host into its constituent parts: subdomain, domain, and suffix.
 
 [![Build Status](https://travis-ci.org/Blobfolio/blob-domain.svg?branch=master)](https://travis-ci.org/Blobfolio/blob-domain)
 
@@ -14,8 +14,10 @@ A PHP library to help validate and parse domains.
  * [::parse_host()](#parse_host)
  * [::parse_host_parts()](#parse_host_parts)
  * [is_valid()](#is_valid)
+ * [is_ascii()](#is_ascii)
  * [is_fqdn()](#is_fqdn)
  * [is_ip()](#is_ip)
+ * [is_unicode()](#is_unicode)
  * [has_dns()](#has_dns)
 4. [License](#license)
 
@@ -161,6 +163,22 @@ Returns `TRUE` or `FALSE`.
 
 
 
+### is_ascii()
+
+Whether or not a host is ASCII, like `google.com`. Unicode domains are still a bit unknown in many parts of the Western world and can cause problems with native PHP functions or databases, so good to know what you've got.
+
+Note: The various `get_*()` functions will always return the host in ASCII format by default. Passing `TRUE` to those functions will return Unicode hosts in their original Unicode, e.g. `☺.com`.
+
+#### Arguments
+
+N/A
+
+#### Returns
+
+Returns `TRUE` or `FALSE`.
+
+
+
 ### is_fdqn()
 
 Checks to see whether the host is a Fully-Qualified Domain Name (or at least a public IP address). In other words, can it be seen by the outside world?
@@ -191,9 +209,25 @@ Returns `TRUE` or `FALSE`.
 
 
 
+### is_unicode()
+
+Whether or not a host is Unicode, like `☺.com`. Unicode hosts can cause problems with native PHP functions and databases, so might be a good thing to know.
+
+Note: The various `get_*()` functions will return an ASCII-fied version of a Unicode domain by default, like `xn--74h.com`. Passing `TRUE` will de-convert them back to the original Unicode.
+
+#### Arguments
+
+N/A
+
+#### Returns
+
+Returns `TRUE` or `FALSE`.
+
+
+
 ### has_dns()
 
-Does this domain have an `A` record in its DNS table or is it a public IP address?
+Does this host have an `A` record in its DNS table or is it a public IP address?
 
 #### Arguments
 

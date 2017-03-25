@@ -138,25 +138,43 @@ class domain_tests extends \PHPUnit\Framework\TestCase {
 	}
 
 	/**
-	 * ->is_FDQN()
+	 * ->is_ascii()
 	 *
 	 * @return void Nothing.
 	 */
-	function test_is_FDQN() {
-		$thing = new \blobfolio\domain\domain('example.com');
-		$this->assertEquals(true, $thing->is_fqdn());
+	function test_is_ascii() {
+		$things = array(
+			'☺.com'=>false,
+			'xn--74h.com'=>false,
+			'com'=>false,
+			'google.com'=>true,
+			'127.0.0.1'=>true
+		);
 
-		$thing = new \blobfolio\domain\domain('com');
-		$this->assertEquals(false, $thing->is_fqdn());
+		foreach ($things as $k=>$v) {
+			$thing = new \blobfolio\domain\domain($k);
+			$this->assertEquals($v, $thing->is_ascii());
+		}
+	}
 
-		$thing = new \blobfolio\domain\domain('localhost');
-		$this->assertEquals(false, $thing->is_fqdn());
+	/**
+	 * ->is_fqdn()
+	 *
+	 * @return void Nothing.
+	 */
+	function test_is_fqdn() {
+		$things = array(
+			'example.com'=>true,
+			'com'=>false,
+			'localhost'=>false,
+			'127.0.0.1'=>false,
+			'2600:3c00::f03c:91ff:feae:0ff2'=>true
+		);
 
-		$thing = new \blobfolio\domain\domain('127.0.0.1');
-		$this->assertEquals(false, $thing->is_fqdn());
-
-		$thing = new \blobfolio\domain\domain('2600:3c00::f03c:91ff:feae:0ff2');
-		$this->assertEquals(true, $thing->is_fqdn());
+		foreach ($things as $k=>$v) {
+			$thing = new \blobfolio\domain\domain($k);
+			$this->assertEquals($v, $thing->is_fqdn());
+		}
 	}
 
 	/**
@@ -182,22 +200,42 @@ class domain_tests extends \PHPUnit\Framework\TestCase {
 	}
 
 	/**
+	 * ->is_unicode()
+	 *
+	 * @return void Nothing.
+	 */
+	function test_is_unicode() {
+		$things = array(
+			'☺.com'=>true,
+			'xn--74h.com'=>true,
+			'com'=>false,
+			'google.com'=>false,
+			'127.0.0.1'=>false
+		);
+
+		foreach ($things as $k=>$v) {
+			$thing = new \blobfolio\domain\domain($k);
+			$this->assertEquals($v, $thing->is_unicode());
+		}
+	}
+
+	/**
 	 * ->has_dns()
 	 *
 	 * @return void Nothing.
 	 */
 	function test_has_dns() {
-		$thing = new \blobfolio\domain\domain('blobfolio.com');
-		$this->assertEquals(true, $thing->has_dns());
+		$things = array(
+			'blobfolio.com'=>true,
+			'asdfasfd.blobfolio.com'=>false,
+			'127.0.0.1'=>false,
+			'2600:3c00::f03c:91ff:feae:0ff2'=>true
+		);
 
-		$thing = new \blobfolio\domain\domain('asdfasfd.blobfolio.com');
-		$this->assertEquals(false, $thing->has_dns());
-
-		$thing = new \blobfolio\domain\domain('127.0.0.1');
-		$this->assertEquals(false, $thing->has_dns());
-
-		$thing = new \blobfolio\domain\domain('2600:3c00::f03c:91ff:feae:0ff2');
-		$this->assertEquals(true, $thing->has_dns());
+		foreach ($things as $k=>$v) {
+			$thing = new \blobfolio\domain\domain($k);
+			$this->assertEquals($v, $thing->has_dns());
+		}
 	}
 
 	/**
@@ -219,12 +257,30 @@ class domain_tests extends \PHPUnit\Framework\TestCase {
 				'subdomain'=>'www',
 				'domain'=>'example',
 				'suffix'=>'com'
+			),
+			'☺.com'=>array(
+				'host'=>'xn--74h.com',
+				'subdomain'=>null,
+				'domain'=>'xn--74h',
+				'suffix'=>'com'
 			)
 		);
 
 		foreach ($things as $k=>$v) {
 			$result = new \blobfolio\domain\domain($k);
 			$this->assertEquals($v, $result->get_data());
+		}
+
+		if (function_exists('idn_to_utf8')) {
+			// Test Unicode.
+			$expected = array(
+				'host'=>'☺.com',
+				'subdomain'=>null,
+				'domain'=>'☺',
+				'suffix'=>'com'
+			);
+			$thing = new \blobfolio\domain\domain('☺.com');
+			$this->assertEquals($expected, $thing->get_data(true));
 		}
 	}
 
