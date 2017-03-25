@@ -305,6 +305,32 @@ class domain {
 		return $this->dns;
 	}
 
+	/**
+	 * Is ASCII
+	 *
+	 * @return bool True/false.
+	 */
+	public function is_ascii() {
+		if (!$this->is_valid()) {
+			return false;
+		}
+
+		return !$this->is_unicode();
+	}
+
+	/**
+	 * Is Unicode
+	 *
+	 * @return bool True/false.
+	 */
+	public function is_unicode() {
+		if (!$this->is_valid() || $this->is_ip() || !function_exists('idn_to_utf8')) {
+			return false;
+		}
+
+		return ($this->to_unicode('host') !== $this->host);
+	}
+
 	// --------------------------------------------------------------------- end results
 
 
@@ -361,8 +387,10 @@ class domain {
 	 */
 	protected function to_unicode($key) {
 		$value = $this->{$key};
-		if (function_exists('idn_to_utf8')) {
-			return idn_to_utf8($value);
+		if (function_exists('idn_to_utf8') && is_string($value)) {
+			$value = explode('.', $value);
+			$value = array_map('idn_to_utf8', $value);
+			return implode('.', $value);
 		}
 
 		return $value;
@@ -371,18 +399,19 @@ class domain {
 	/**
 	 * Get Data
 	 *
+	 * @param bool $unicode Unicode.
 	 * @return array|bool Host data or false.
 	 */
-	public function get_data() {
+	public function get_data(bool $unicode=false) {
 		if (!$this->is_valid()) {
 			return false;
 		}
 
 		return array(
-			'host'=>$this->host,
-			'subdomain'=>$this->subdomain,
-			'domain'=>$this->domain,
-			'suffix'=>$this->suffix
+			'host'=>$this->get_host($unicode),
+			'subdomain'=>$this->get_subdomain($unicode),
+			'domain'=>$this->get_domain($unicode),
+			'suffix'=>$this->get_suffix($unicode)
 		);
 	}
 
