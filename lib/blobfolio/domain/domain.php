@@ -36,9 +36,10 @@ class domain {
 	 * Construct
 	 *
 	 * @param string $host Host.
+	 * @param bool $www Strip leading www.
 	 * @return bool True/false.
 	 */
-	public function __construct($host='') {
+	public function __construct($host='', bool $www=false) {
 		// Parse the parts.
 		if (false === ($parsed = static::parse_host_parts($host))) {
 			return false;
@@ -48,6 +49,11 @@ class domain {
 		$this->subdomain = $parsed['subdomain'];
 		$this->domain = $parsed['domain'];
 		$this->suffix = $parsed['suffix'];
+
+		if ($www) {
+			$this->strip_www();
+		}
+
 		return true;
 	}
 
@@ -236,6 +242,35 @@ class domain {
 		return $out;
 	}
 
+	/**
+	 * Strip Leading WWW
+	 *
+	 * The www. subdomain is evil. This removes
+	 * it, but only if it is part of the subdomain.
+	 *
+	 * @return bool True/false.
+	 */
+	public function strip_www() {
+		if (!$this->is_valid() || is_null($this->subdomain)) {
+			return false;
+		}
+
+		if (
+			'www' === $this->subdomain ||
+			'www.' === \blobfolio\common\mb::substr($this->subdomain, 0, 4)
+		) {
+			$this->subdomain = preg_replace('/^www\.?/u', '', $this->subdomain);
+			if (!strlen($this->subdomain)) {
+				$this->subdomain = null;
+			}
+
+			$this->host = preg_replace('/^www\./u', '', $this->host);
+			return true;
+		}
+
+		return false;
+	}
+
 	// --------------------------------------------------------------------- end init
 
 
@@ -295,10 +330,10 @@ class domain {
 				$this->dns = false;
 			}
 			elseif ($this->is_ip()) {
-				$this->dns = true;
+				$this->dns = $this->is_ip(false);
 			}
 			else {
-				$this->dns = !!filter_var(gethostbyname("{$this->host}."), FILTER_VALIDATE_IP);
+				$this->dns = !!filter_var(gethostbyname("{$this->host}."), FILTER_VALIDATE_IP, FILTER_FLAG_NO_PRIV_RANGE | FILTER_FLAG_NO_RES_RANGE);
 			}
 		}
 

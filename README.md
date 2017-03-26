@@ -19,6 +19,7 @@ blob-domain is a simple PHP library for parsing and validating domain names. It 
  * [is_ip()](#is_ip)
  * [is_unicode()](#is_unicode)
  * [has_dns()](#has_dns)
+ * [strip_www()](#strip_www)
 4. [License](#license)
 
 &nbsp;
@@ -54,6 +55,7 @@ First up, the basics.
 ### Basic Usage:
 
 ```php
+// Initialize the object by passing a host-like string.
 $domain = new blobfolio\domain\domain('www.Google.com');
 
 // Access the sanitized host by typecasting as a string.
@@ -86,7 +88,7 @@ echo $domain->get_host(true); //☺.com
 
 &nbsp;
 
-The following static methods exist if you didn't want to initialize an object.
+The following static methods exist if you don't want to initialize an object.
 
 ### ::parse_host()
 
@@ -165,6 +167,8 @@ Returns `TRUE` or `FALSE`.
 
 Whether or not a host is ASCII, like `google.com`. Unicode domains are still a bit unknown in many parts of the Western world and can cause problems with native PHP functions or databases, so good to know what you've got.
 
+Note: IP addresses are considered ASCII for the purposes of this function.
+
 Note: The various `get_*()` functions will always return the host in ASCII format by default. Passing `TRUE` to those functions will return Unicode hosts in their original Unicode, e.g. `☺.com`.
 
 #### Arguments
@@ -174,6 +178,19 @@ N/A
 #### Returns
 
 Returns `TRUE` or `FALSE`.
+
+#### Example
+
+```php
+// ☺.com
+$domain->is_ascii(); //FALSE
+
+// xn--74h.com
+$domain->is_ascii(); //FALSE
+
+// google.com
+$domain->is_ascii(); //TRUE
+```
 
 
 
@@ -211,7 +228,7 @@ Returns `TRUE` or `FALSE`.
 
 Whether or not a host is Unicode, like `☺.com`. Unicode hosts can cause problems with native PHP functions and databases, so might be a good thing to know.
 
-Note: The various `get_*()` functions will return an ASCII-fied version of a Unicode domain by default, like `xn--74h.com`. Passing `TRUE` will de-convert them back to the original Unicode.
+Note: The various `get_*()` functions will return an ASCIIfied version of a Unicode domain by default, like `xn--74h.com`. Passing `TRUE` will de-convert them back to the original Unicode.
 
 #### Arguments
 
@@ -220,6 +237,19 @@ N/A
 #### Returns
 
 Returns `TRUE` or `FALSE`.
+
+#### Example
+
+```php
+// ☺.com
+$domain->is_unicode(); //TRUE
+
+// xn--74h.com
+$domain->is_unicode(); //TRUE
+
+// google.com
+$domain->is_unicode(); //FALSE
+```
 
 
 
@@ -227,6 +257,8 @@ Returns `TRUE` or `FALSE`.
 
 Does this host have an `A` record in its DNS table or is it a public IP address?
 
+Note: the `A` record cannot point to a restricted/reserved IP like `127.0.0.1` or the function will return `FALSE`.
+
 #### Arguments
 
 N/A
@@ -234,6 +266,47 @@ N/A
 #### Returns
 
 Returns `TRUE` or `FALSE`.
+
+
+
+### strip_www()
+
+This removes the leading `www.` subdomain, if any, from the parsed result. You can also have this run automatically at initialization by passing a second argument to the constructor, `TRUE`.
+
+#### Arguments
+
+N/A
+
+#### Returns
+
+Returns `TRUE` or `FALSE`, indicating whether or not a change was made.
+
+#### Example
+
+```php
+// As separate actions.
+$foo = new blobfolio\domain\domain('www.Google.com');
+/*
+array(
+    host => www.google.com
+    subdomain => www
+    domain => google
+    suffix => com
+)
+*/
+$foo->strip_www();
+/*
+array(
+    host => google.com
+    subdomain => NULL
+    domain => google
+    suffix => com
+)
+*/
+
+// Or you can do this at initializing by passing TRUE as a second argument.
+$foo = new blobfolio\domain\domain('www.Google.com', true);
+```
 
 
 
