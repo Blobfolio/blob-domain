@@ -186,7 +186,7 @@ function fetch_urls(array $urls=array()) {
 			curl_setopt($curls[$url], CURLOPT_HEADER, false);
 			curl_setopt($curls[$url], CURLOPT_RETURNTRANSFER, 1);
 			curl_setopt($curls[$url], CURLOPT_TIMEOUT, 10);
-			curl_setopt($curls[$url], CURLOPT_USERAGENT, 'blob-mimes');
+			curl_setopt($curls[$url], CURLOPT_USERAGENT, 'blob-domain');
 			curl_setopt($curls[$url], CURLOPT_FOLLOWLOCATION, true);
 
 			curl_multi_add_handle($multi, $curls[$url]);
