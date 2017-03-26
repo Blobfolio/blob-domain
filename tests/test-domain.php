@@ -239,6 +239,29 @@ class domain_tests extends \PHPUnit\Framework\TestCase {
 	}
 
 	/**
+	 * ->strip_www()
+	 *
+	 * @return void Nothing.
+	 */
+	function test_strip_www() {
+		// Sneaky: www is really a domain here.
+		$thing = new \blobfolio\domain\domain('www.example.sch.uk', true);
+		$this->assertEquals('www.example.sch.uk', $thing->get_host());
+
+		$thing = new \blobfolio\domain\domain('www.google.com', true);
+		$this->assertEquals('google.com', $thing->get_host());
+		$this->assertEquals(true, is_null($thing->get_subdomain()));
+
+		$thing = new \blobfolio\domain\domain('www.google.com');
+		$this->assertEquals('www.google.com', $thing->get_host());
+		$this->assertEquals(false, is_null($thing->get_subdomain()));
+
+		$thing = new \blobfolio\domain\domain('www.domains.google.com', true);
+		$this->assertEquals('domains.google.com', $thing->get_host());
+		$this->assertEquals('domains', $thing->get_subdomain());
+	}
+
+	/**
 	 * ->get_data()
 	 *
 	 * @return void Nothing.
