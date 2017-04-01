@@ -344,7 +344,7 @@ foreach ($data as $line) {
 		continue;
 	}
 
-	$parts = preg_replace('/^!/', '!.', $parts);
+	$parts = preg_replace('/^!/', '!.', $line);
 	$parts = explode('.', $parts);
 
 	save_data($suffixes, $parts);
