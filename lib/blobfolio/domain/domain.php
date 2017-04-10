@@ -39,7 +39,9 @@ class domain {
 	 * @param bool $www Strip leading www.
 	 * @return bool True/false.
 	 */
-	public function __construct($host='', bool $www=false) {
+	public function __construct($host='', $www=false) {
+		\blobfolio\common\ref\cast::bool($www, true);
+
 		// Parse the parts.
 		if (false === ($parsed = static::parse_host_parts($host))) {
 			return false;
@@ -285,7 +287,8 @@ class domain {
 	 * @param bool $dns Has DNS.
 	 * @return bool True/false.
 	 */
-	public function is_valid(bool $dns=false) {
+	public function is_valid($dns=false) {
+		\blobfolio\common\ref\cast::bool($dns, true);
 		return !is_null($this->host) && (!$dns || $this->has_dns());
 	}
 
@@ -307,7 +310,9 @@ class domain {
 	 * @param bool $restricted Allow restricted.
 	 * @return bool True/false.
 	 */
-	public function is_ip(bool $restricted=true) {
+	public function is_ip($restricted=true) {
+		\blobfolio\common\ref\cast::bool($restricted, true);
+
 		if (!$this->is_valid()) {
 			return false;
 		}
@@ -437,7 +442,9 @@ class domain {
 	 * @param bool $unicode Unicode.
 	 * @return array|bool Host data or false.
 	 */
-	public function get_data(bool $unicode=false) {
+	public function get_data($unicode=false) {
+		\blobfolio\common\ref\cast::bool($unicode, true);
+
 		if (!$this->is_valid()) {
 			return false;
 		}
