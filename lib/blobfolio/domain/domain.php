@@ -40,7 +40,7 @@ class domain {
 	 * @return bool True/false.
 	 */
 	public function __construct($host='', $www=false) {
-		\blobfolio\common\ref\cast::bool($www, true);
+		\blobfolio\common\ref\cast::to_bool($www, true);
 
 		// Parse the parts.
 		if (false === ($parsed = static::parse_host_parts($host))) {
@@ -77,7 +77,7 @@ class domain {
 		}
 		// Or the hard way?
 		else {
-			\blobfolio\common\ref\cast::string($host, true);
+			\blobfolio\common\ref\cast::to_string($host, true);
 			$host = preg_replace('/^\s+/u', '', $host);
 			$host = preg_replace('/\s+$/u', '', $host);
 
@@ -288,7 +288,7 @@ class domain {
 	 * @return bool True/false.
 	 */
 	public function is_valid($dns=false) {
-		\blobfolio\common\ref\cast::bool($dns, true);
+		\blobfolio\common\ref\cast::to_bool($dns, true);
 		return !is_null($this->host) && (!$dns || $this->has_dns());
 	}
 
@@ -311,7 +311,7 @@ class domain {
 	 * @return bool True/false.
 	 */
 	public function is_ip($restricted=true) {
-		\blobfolio\common\ref\cast::bool($restricted, true);
+		\blobfolio\common\ref\cast::to_bool($restricted, true);
 
 		if (!$this->is_valid()) {
 			return false;
@@ -407,7 +407,7 @@ class domain {
 
 			if (is_array($args) && count($args)) {
 				$args = \blobfolio\common\data::array_pop_top($args);
-				\blobfolio\common\ref\cast::bool($args);
+				\blobfolio\common\ref\cast::to_bool($args);
 				if ($args) {
 					return $this->to_unicode($variable);
 				}
@@ -443,7 +443,7 @@ class domain {
 	 * @return array|bool Host data or false.
 	 */
 	public function get_data($unicode=false) {
-		\blobfolio\common\ref\cast::bool($unicode, true);
+		\blobfolio\common\ref\cast::to_bool($unicode, true);
 
 		if (!$this->is_valid()) {
 			return false;
