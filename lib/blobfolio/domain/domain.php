@@ -80,8 +80,7 @@ class domain {
 		// Or the hard way?
 		else {
 			common\ref\cast::to_string($host, true);
-			$host = preg_replace('/^\s+/u', '', $host);
-			$host = preg_replace('/\s+$/u', '', $host);
+			common\ref\mb::trim($host);
 
 			// Cut off the path, if any.
 			if (false !== ($start = common\mb::strpos($host, '/'))) {
