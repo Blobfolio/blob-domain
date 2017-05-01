@@ -2,11 +2,13 @@
 /**
  * Domain tests.
  *
- * PHPUnit tests for \blobfolio\domain\domain.
+ * PHPUnit tests for domain.
  *
  * @package blobfolio/domain
  * @author	Blobfolio, LLC <hello@blobfolio.com>
  */
+
+use \blobfolio\domain\domain;
 
 /**
  * Test Suite
@@ -28,7 +30,7 @@ class domain_tests extends \PHPUnit\Framework\TestCase {
 		);
 
 		foreach ($things as $thing) {
-			$host = \blobfolio\domain\domain::parse_host($thing);
+			$host = domain::parse_host($thing);
 			if (function_exists('idn_to_ascii')) {
 				$this->assertEquals('xn--74h.com', $host);
 			}
@@ -38,20 +40,20 @@ class domain_tests extends \PHPUnit\Framework\TestCase {
 		}
 
 		$thing = 'localhost';
-		$this->assertEquals($thing, \blobfolio\domain\domain::parse_host($thing));
+		$this->assertEquals($thing, domain::parse_host($thing));
 
 		$thing = 'http://josh:here@[2600:3c00::f03c:91ff:feae:0ff2]:443/foobar';
-		$result = \blobfolio\domain\domain::parse_host($thing);
+		$result = domain::parse_host($thing);
 		$this->assertEquals('2600:3c00::f03c:91ff:feae:ff2', $result);
 
 		$thing = '-localhost';
-		$this->assertEquals(false, \blobfolio\domain\domain::parse_host($thing));
+		$this->assertEquals(false, domain::parse_host($thing));
 
 		$thing = 'local_host';
-		$this->assertEquals(false, \blobfolio\domain\domain::parse_host($thing));
+		$this->assertEquals(false, domain::parse_host($thing));
 
 		$thing = ' localhost';
-		$this->assertEquals('localhost', \blobfolio\domain\domain::parse_host($thing));
+		$this->assertEquals('localhost', domain::parse_host($thing));
 	}
 
 	/**
@@ -90,7 +92,7 @@ class domain_tests extends \PHPUnit\Framework\TestCase {
 		);
 
 		foreach ($things as $k=>$v) {
-			$parts = \blobfolio\domain\domain::parse_host_parts($k);
+			$parts = domain::parse_host_parts($k);
 			$this->assertEquals($v, $parts);
 		}
 	}
@@ -102,12 +104,12 @@ class domain_tests extends \PHPUnit\Framework\TestCase {
 	 */
 	function test_toString() {
 		$thing = 'www.example.sch.uk';
-		$result = new \blobfolio\domain\domain($thing);
+		$result = new domain($thing);
 		$result = (string) $result;
 		$this->assertEquals($thing, $result);
 
 		$thing = 'com';
-		$result = new \blobfolio\domain\domain($thing);
+		$result = new domain($thing);
 		$result = (string) $result;
 		$this->assertEquals('', $result);
 	}
@@ -118,22 +120,22 @@ class domain_tests extends \PHPUnit\Framework\TestCase {
 	 * @return void Nothing.
 	 */
 	function test_is_valid() {
-		$thing = new \blobfolio\domain\domain('example.com');
+		$thing = new domain('example.com');
 		$this->assertEquals(true, $thing->is_valid());
 
-		$thing = new \blobfolio\domain\domain('com');
+		$thing = new domain('com');
 		$this->assertEquals(false, $thing->is_valid());
 
 		// FQDN.
-		$thing = new \blobfolio\domain\domain('blobfolio.com');
+		$thing = new domain('blobfolio.com');
 		$this->assertEquals(true, $thing->is_valid(true));
 
 		// IP.
-		$thing = new \blobfolio\domain\domain('127.0.0.1');
+		$thing = new domain('127.0.0.1');
 		$this->assertEquals(true, $thing->is_valid());
 
 		// Local IP (e.g. not FQDN).
-		$thing = new \blobfolio\domain\domain('127.0.0.1');
+		$thing = new domain('127.0.0.1');
 		$this->assertEquals(false, $thing->is_valid(true));
 	}
 
@@ -152,7 +154,7 @@ class domain_tests extends \PHPUnit\Framework\TestCase {
 		);
 
 		foreach ($things as $k=>$v) {
-			$thing = new \blobfolio\domain\domain($k);
+			$thing = new domain($k);
 			$this->assertEquals($v, $thing->is_ascii());
 		}
 	}
@@ -172,7 +174,7 @@ class domain_tests extends \PHPUnit\Framework\TestCase {
 		);
 
 		foreach ($things as $k=>$v) {
-			$thing = new \blobfolio\domain\domain($k);
+			$thing = new domain($k);
 			$this->assertEquals($v, $thing->is_fqdn());
 		}
 	}
@@ -183,19 +185,19 @@ class domain_tests extends \PHPUnit\Framework\TestCase {
 	 * @return void Nothing.
 	 */
 	function test_is_ip() {
-		$thing = new \blobfolio\domain\domain('example.com');
+		$thing = new domain('example.com');
 		$this->assertEquals(false, $thing->is_ip());
 
-		$thing = new \blobfolio\domain\domain('example.com');
+		$thing = new domain('example.com');
 		$this->assertEquals(false, $thing->is_ip(false));
 
-		$thing = new \blobfolio\domain\domain('127.0.0.1');
+		$thing = new domain('127.0.0.1');
 		$this->assertEquals(true, $thing->is_ip());
 
-		$thing = new \blobfolio\domain\domain('127.0.0.1');
+		$thing = new domain('127.0.0.1');
 		$this->assertEquals(false, $thing->is_ip(false));
 
-		$thing = new \blobfolio\domain\domain('2600:3c00::f03c:91ff:feae:0ff2');
+		$thing = new domain('2600:3c00::f03c:91ff:feae:0ff2');
 		$this->assertEquals(true, $thing->is_ip());
 	}
 
@@ -214,7 +216,7 @@ class domain_tests extends \PHPUnit\Framework\TestCase {
 		);
 
 		foreach ($things as $k=>$v) {
-			$thing = new \blobfolio\domain\domain($k);
+			$thing = new domain($k);
 			$this->assertEquals($v, $thing->is_unicode());
 		}
 	}
@@ -233,7 +235,7 @@ class domain_tests extends \PHPUnit\Framework\TestCase {
 		);
 
 		foreach ($things as $k=>$v) {
-			$thing = new \blobfolio\domain\domain($k);
+			$thing = new domain($k);
 			$this->assertEquals($v, $thing->has_dns());
 		}
 	}
@@ -245,18 +247,18 @@ class domain_tests extends \PHPUnit\Framework\TestCase {
 	 */
 	function test_strip_www() {
 		// Sneaky: www is really a domain here.
-		$thing = new \blobfolio\domain\domain('www.example.sch.uk', true);
+		$thing = new domain('www.example.sch.uk', true);
 		$this->assertEquals('www.example.sch.uk', $thing->get_host());
 
-		$thing = new \blobfolio\domain\domain('www.google.com', true);
+		$thing = new domain('www.google.com', true);
 		$this->assertEquals('google.com', $thing->get_host());
 		$this->assertEquals(true, is_null($thing->get_subdomain()));
 
-		$thing = new \blobfolio\domain\domain('www.google.com');
+		$thing = new domain('www.google.com');
 		$this->assertEquals('www.google.com', $thing->get_host());
 		$this->assertEquals(false, is_null($thing->get_subdomain()));
 
-		$thing = new \blobfolio\domain\domain('www.domains.google.com', true);
+		$thing = new domain('www.domains.google.com', true);
 		$this->assertEquals('domains.google.com', $thing->get_host());
 		$this->assertEquals('domains', $thing->get_subdomain());
 	}
@@ -290,7 +292,7 @@ class domain_tests extends \PHPUnit\Framework\TestCase {
 		);
 
 		foreach ($things as $k=>$v) {
-			$result = new \blobfolio\domain\domain($k);
+			$result = new domain($k);
 			$this->assertEquals($v, $result->get_data());
 		}
 
@@ -302,7 +304,7 @@ class domain_tests extends \PHPUnit\Framework\TestCase {
 				'domain'=>'☺',
 				'suffix'=>'com'
 			);
-			$thing = new \blobfolio\domain\domain('☺.com');
+			$thing = new domain('☺.com');
 			$this->assertEquals($expected, $thing->get_data(true));
 		}
 	}
@@ -313,14 +315,14 @@ class domain_tests extends \PHPUnit\Framework\TestCase {
 	 * @return void Nothing.
 	 */
 	function test_get() {
-		$thing = new \blobfolio\domain\domain('eXample.com');
+		$thing = new domain('eXample.com');
 
 		$this->assertEquals('example.com', $thing->get_host());
 		$this->assertEquals(null, $thing->get_subdomain());
 		$this->assertEquals('example', $thing->get_domain());
 		$this->assertEquals('com', $thing->get_suffix());
 
-		$thing = new \blobfolio\domain\domain('☺.com');
+		$thing = new domain('☺.com');
 		$this->assertEquals('☺.com', $thing->get_host(true));
 		$this->assertEquals('xn--74h.com', $thing->get_host());
 	}
