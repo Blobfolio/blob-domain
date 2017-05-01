@@ -10,6 +10,8 @@
 
 namespace blobfolio\domain;
 
+use \blobfolio\common;
+
 class domain {
 
 	const HOST_PARTS = array(
@@ -40,7 +42,7 @@ class domain {
 	 * @return bool True/false.
 	 */
 	public function __construct($host='', $www=false) {
-		\blobfolio\common\ref\cast::to_bool($www, true);
+		common\ref\cast::to_bool($www, true);
 
 		// Parse the parts.
 		if (false === ($parsed = static::parse_host_parts($host))) {
@@ -71,45 +73,45 @@ class domain {
 	 */
 	public static function parse_host($host) {
 		// Try to parse it the easy way.
-		$tmp = \blobfolio\common\mb::parse_url($host, PHP_URL_HOST);
+		$tmp = common\mb::parse_url($host, PHP_URL_HOST);
 		if ($tmp) {
 			$host = $tmp;
 		}
 		// Or the hard way?
 		else {
-			\blobfolio\common\ref\cast::to_string($host, true);
+			common\ref\cast::to_string($host, true);
 			$host = preg_replace('/^\s+/u', '', $host);
 			$host = preg_replace('/\s+$/u', '', $host);
 
 			// Cut off the path, if any.
-			if (false !== ($start = \blobfolio\common\mb::strpos($host, '/'))) {
-				$host = \blobfolio\common\mb::substr($host, 0, $start);
+			if (false !== ($start = common\mb::strpos($host, '/'))) {
+				$host = common\mb::substr($host, 0, $start);
 			}
 
 			// Cut off the query, if any.
-			if (false !== ($start = \blobfolio\common\mb::strpos($host, '?'))) {
-				$host = \blobfolio\common\mb::substr($host, 0, $start);
+			if (false !== ($start = common\mb::strpos($host, '?'))) {
+				$host = common\mb::substr($host, 0, $start);
 			}
 
 			// Cut off credentials, if any.
-			if (false !== ($start = \blobfolio\common\mb::strpos($host, '@'))) {
-				$host = \blobfolio\common\mb::substr($host, $start + 1);
+			if (false !== ($start = common\mb::strpos($host, '@'))) {
+				$host = common\mb::substr($host, $start + 1);
 			}
 
 			// Is this an IPv6 address?
 			if (filter_var($host, FILTER_VALIDATE_IP, FILTER_FLAG_IPV6)) {
-				\blobfolio\common\ref\sanitize::ip($host, true);
+				common\ref\sanitize::ip($host, true);
 			}
 			elseif (
-				0 === \blobfolio\common\mb::strpos($host, '[') &&
-				false !== ($end = \blobfolio\common\mb::strpos($host, ']'))
+				0 === common\mb::strpos($host, '[') &&
+				false !== ($end = common\mb::strpos($host, ']'))
 			) {
-				$host = \blobfolio\common\mb::substr($host, 1, $end - 1);
-				\blobfolio\common\ref\sanitize::ip($host, true);
+				$host = common\mb::substr($host, 1, $end - 1);
+				common\ref\sanitize::ip($host, true);
 			}
 			// Cut off port, if any.
-			elseif (false !== ($start = \blobfolio\common\mb::strpos($host, ':'))) {
-				$host = \blobfolio\common\mb::substr($host, 0, $start);
+			elseif (false !== ($start = common\mb::strpos($host, ':'))) {
+				$host = common\mb::substr($host, 0, $start);
 			}
 
 			// If it is empty or invalid, there is nothing we can do.
@@ -125,7 +127,7 @@ class domain {
 			}
 
 			// Lowercase it.
-			\blobfolio\common\ref\mb::strtolower($host);
+			common\ref\mb::strtolower($host);
 
 			// Get rid of trailing periods.
 			$host = ltrim($host, '.');
@@ -133,9 +135,9 @@ class domain {
 		}
 
 		// Liberate IPv6 from its walls.
-		if (0 === \blobfolio\common\mb::strpos($host, '[')) {
+		if (0 === common\mb::strpos($host, '[')) {
 			$host = str_replace(array('[',']'), '', $host);
-			\blobfolio\common\ref\sanitize::ip($host, true);
+			common\ref\sanitize::ip($host, true);
 		}
 
 		// Is this an IP address? If so, we're done!
@@ -259,7 +261,7 @@ class domain {
 
 		if (
 			'www' === $this->subdomain ||
-			'www.' === \blobfolio\common\mb::substr($this->subdomain, 0, 4)
+			'www.' === common\mb::substr($this->subdomain, 0, 4)
 		) {
 			$this->subdomain = preg_replace('/^www\.?/u', '', $this->subdomain);
 			if (!strlen($this->subdomain)) {
@@ -288,7 +290,7 @@ class domain {
 	 * @return bool True/false.
 	 */
 	public function is_valid($dns=false) {
-		\blobfolio\common\ref\cast::to_bool($dns, true);
+		common\ref\cast::to_bool($dns, true);
 		return !is_null($this->host) && (!$dns || $this->has_dns());
 	}
 
@@ -311,7 +313,7 @@ class domain {
 	 * @return bool True/false.
 	 */
 	public function is_ip($restricted=true) {
-		\blobfolio\common\ref\cast::to_bool($restricted, true);
+		common\ref\cast::to_bool($restricted, true);
 
 		if (!$this->is_valid()) {
 			return false;
@@ -406,8 +408,8 @@ class domain {
 			$variable = $matches[1][0];
 
 			if (is_array($args) && count($args)) {
-				$args = \blobfolio\common\data::array_pop_top($args);
-				\blobfolio\common\ref\cast::to_bool($args);
+				$args = common\data::array_pop_top($args);
+				common\ref\cast::to_bool($args);
 				if ($args) {
 					return $this->to_unicode($variable);
 				}
@@ -443,7 +445,7 @@ class domain {
 	 * @return array|bool Host data or false.
 	 */
 	public function get_data($unicode=false) {
-		\blobfolio\common\ref\cast::to_bool($unicode, true);
+		common\ref\cast::to_bool($unicode, true);
 
 		if (!$this->is_valid()) {
 			return false;
