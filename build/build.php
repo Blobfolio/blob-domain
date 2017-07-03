@@ -15,11 +15,20 @@
  * MBSTRING
  * DOM
  *
- * @see {https://publicsuffix.org/list/public_suffix_list.dat}
- *
  * @package blobfolio/domain
  * @author	Blobfolio, LLC <hello@blobfolio.com>
  */
+
+/**
+ * Data Source: Public Suffix List
+ *
+ * @see {https://publicsuffix.org/list/public_suffix_list.dat}
+ *
+ * @copyright 2017 Mozilla Foundation.
+ * @license https://www.mozilla.org/en-US/MPL/ MPL
+ */
+
+
 
 // -------------------------------------------------
 // Setup/Env
