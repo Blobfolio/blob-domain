@@ -18,7 +18,7 @@ class domain {
 		'host'=>null,
 		'subdomain'=>null,
 		'domain'=>null,
-		'suffix'=>null
+		'suffix'=>null,
 	);
 
 	protected $host;
@@ -135,7 +135,7 @@ class domain {
 
 		// Liberate IPv6 from its walls.
 		if (0 === common\mb::strpos($host, '[')) {
-			$host = str_replace(array('[',']'), '', $host);
+			$host = str_replace(array('[', ']'), '', $host);
 			common\ref\sanitize::ip($host, true);
 		}
 
@@ -454,7 +454,7 @@ class domain {
 			'host'=>$this->get_host($unicode),
 			'subdomain'=>$this->get_subdomain($unicode),
 			'domain'=>$this->get_domain($unicode),
-			'suffix'=>$this->get_suffix($unicode)
+			'suffix'=>$this->get_suffix($unicode),
 		);
 	}
 

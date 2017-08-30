@@ -26,7 +26,7 @@ class domain_tests extends \PHPUnit\Framework\TestCase {
 			'//☺.com',
 			'☺.com',
 			'☺.com.',
-			'.☺.com'
+			'.☺.com',
 		);
 
 		foreach ($things as $thing) {
@@ -68,27 +68,27 @@ class domain_tests extends \PHPUnit\Framework\TestCase {
 				'host'=>'example.com',
 				'subdomain'=>null,
 				'domain'=>'example',
-				'suffix'=>'com'
+				'suffix'=>'com',
 			),
 			'www.example.com'=>array(
 				'host'=>'www.example.com',
 				'subdomain'=>'www',
 				'domain'=>'example',
-				'suffix'=>'com'
+				'suffix'=>'com',
 			),
 			'www.example.co.uk'=>array(
 				'host'=>'www.example.co.uk',
 				'subdomain'=>'www',
 				'domain'=>'example',
-				'suffix'=>'co.uk'
+				'suffix'=>'co.uk',
 			),
 			'co.uk'=>false,
 			'www.example.sch.uk'=>array(
 				'host'=>'www.example.sch.uk',
 				'subdomain'=>null,
 				'domain'=>'www',
-				'suffix'=>'example.sch.uk'
-			)
+				'suffix'=>'example.sch.uk',
+			),
 		);
 
 		foreach ($things as $k=>$v) {
@@ -150,7 +150,7 @@ class domain_tests extends \PHPUnit\Framework\TestCase {
 			'xn--74h.com'=>false,
 			'com'=>false,
 			'google.com'=>true,
-			'127.0.0.1'=>true
+			'127.0.0.1'=>true,
 		);
 
 		foreach ($things as $k=>$v) {
@@ -170,7 +170,7 @@ class domain_tests extends \PHPUnit\Framework\TestCase {
 			'com'=>false,
 			'localhost'=>false,
 			'127.0.0.1'=>false,
-			'2600:3c00::f03c:91ff:feae:0ff2'=>true
+			'2600:3c00::f03c:91ff:feae:0ff2'=>true,
 		);
 
 		foreach ($things as $k=>$v) {
@@ -212,7 +212,7 @@ class domain_tests extends \PHPUnit\Framework\TestCase {
 			'xn--74h.com'=>true,
 			'com'=>false,
 			'google.com'=>false,
-			'127.0.0.1'=>false
+			'127.0.0.1'=>false,
 		);
 
 		foreach ($things as $k=>$v) {
@@ -231,7 +231,7 @@ class domain_tests extends \PHPUnit\Framework\TestCase {
 			'blobfolio.com'=>true,
 			'asdfasfd.blobfolio.com'=>false,
 			'127.0.0.1'=>false,
-			'2600:3c00::f03c:91ff:feae:0ff2'=>true
+			'2600:3c00::f03c:91ff:feae:0ff2'=>true,
 		);
 
 		foreach ($things as $k=>$v) {
@@ -275,20 +275,20 @@ class domain_tests extends \PHPUnit\Framework\TestCase {
 				'host'=>'example.com',
 				'subdomain'=>null,
 				'domain'=>'example',
-				'suffix'=>'com'
+				'suffix'=>'com',
 			),
 			'www.example.com'=>array(
 				'host'=>'www.example.com',
 				'subdomain'=>'www',
 				'domain'=>'example',
-				'suffix'=>'com'
+				'suffix'=>'com',
 			),
 			'☺.com'=>array(
 				'host'=>'xn--74h.com',
 				'subdomain'=>null,
 				'domain'=>'xn--74h',
-				'suffix'=>'com'
-			)
+				'suffix'=>'com',
+			),
 		);
 
 		foreach ($things as $k=>$v) {
@@ -302,7 +302,7 @@ class domain_tests extends \PHPUnit\Framework\TestCase {
 				'host'=>'☺.com',
 				'subdomain'=>null,
 				'domain'=>'☺',
-				'suffix'=>'com'
+				'suffix'=>'com',
 			);
 			$thing = new domain('☺.com');
 			$this->assertEquals($expected, $thing->get_data(true));

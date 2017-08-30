@@ -83,7 +83,7 @@ function cache_path(string $url) {
 	// Strip and translate a little.
 	$url = strtolower($url);
 	$url = preg_replace('/^https?:\/\//', '', $url);
-	$url = str_replace(array('/','\\','?','#'), '-', $url);
+	$url = str_replace(array('/', '\\', '?', '#'), '-', $url);
 
 	return SOURCE_PATH . '/' . $url;
 }
@@ -269,7 +269,7 @@ function array_to_php($var, int $indents=1) {
 		$out[] = $line;
 	}
 
-	return "\n" . implode(",\n", $out) . "\n" . str_repeat("\t", $indents - 1);
+	return "\n" . implode(",\n", $out) . ",\n" . str_repeat("\t", $indents - 1);
 }
 
 
@@ -367,7 +367,7 @@ foreach ($data as $line) {
 debug_stdout('   ++ Saving data...');
 $replacements = array(
 	'%GENERATED%'=>date('Y-m-d H:i:s'),
-	'%SUFFIXES%'=>array_to_php($suffixes, 2)
+	'%SUFFIXES%'=>array_to_php($suffixes, 2),
 );
 $out = file_get_contents(DIST_TEMPLATE);
 $out = str_replace(array_keys($replacements), array_values($replacements), $out);
