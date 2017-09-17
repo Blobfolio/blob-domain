@@ -29,7 +29,6 @@
     "ext-json": "*",
     "ext-intl": "*",
 
-    "neitanod\/forceutf8": "*",
     "blobfolio\/blob-common": "*"
   },
   "require-dev": {
