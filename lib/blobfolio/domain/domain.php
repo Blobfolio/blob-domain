@@ -121,7 +121,7 @@ class domain {
 			// Convert to ASCII if possible.
 			if (function_exists('idn_to_ascii')) {
 				$host = explode('.', $host);
-				$host = array_map('idn_to_ascii', $host);
+				common\ref\file::idn_to_ascii($host);
 				$host = implode('.', $host);
 			}
 
@@ -430,7 +430,7 @@ class domain {
 		$value = $this->{$key};
 		if (function_exists('idn_to_utf8') && is_string($value)) {
 			$value = explode('.', $value);
-			$value = array_map('idn_to_utf8', $value);
+			common\ref\file::idn_to_utf8($value);
 			return implode('.', $value);
 		}
 
