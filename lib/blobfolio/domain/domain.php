@@ -83,7 +83,7 @@ class domain {
 		}
 		// Or the hard way?
 		else {
-			r_cast::to_string($host, true);
+			r_cast::string($host, true);
 
 			// Lock UTF-8 Casting.
 			$lock = constants::$str_lock;
@@ -417,7 +417,7 @@ class domain {
 
 			if (is_array($args) && count($args)) {
 				$args = c_data::array_pop_top($args);
-				r_cast::to_bool($args);
+				r_cast::bool($args);
 				if ($args) {
 					return $this->to_unicode($variable);
 				}
