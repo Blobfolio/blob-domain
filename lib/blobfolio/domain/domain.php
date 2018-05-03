@@ -111,7 +111,7 @@ class domain {
 				r_sanitize::ip($host, true);
 			}
 			elseif (
-				0 === v_mb::strpos($host, '[') &&
+				(0 === strpos($host, '[')) &&
 				false !== ($end = v_mb::strpos($host, ']'))
 			) {
 				$host = v_mb::substr($host, 1, $end - 1);
@@ -410,7 +410,7 @@ class domain {
 		preg_match_all('/^get_(.+)$/', $method, $matches);
 		if (
 			count($matches[0]) &&
-			'dns' !== $matches[1][0] &&
+			('dns' !== $matches[1][0]) &&
 			property_exists($this, $matches[1][0])
 		) {
 			$variable = $matches[1][0];
