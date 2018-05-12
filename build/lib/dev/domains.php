@@ -35,9 +35,9 @@ class domains extends \blobfolio\bob\base\build {
 	const SKIP_PACKAGE = true;
 
 	// MaxMind URLs.
-	const DATA_TEMPLATE = BLOBWP_BUILD_DIR . 'skel/data.template';
+	const DATA_TEMPLATE = BOB_BUILD_DIR . 'skel/data.template';
 	const DATA_SOURCE = 'https://publicsuffix.org/list/public_suffix_list.dat';
-	const DATA_OUT = BLOBWP_ROOT_DIR . 'lib/blobfolio/domain/data.php';
+	const DATA_OUT = BOB_ROOT_DIR . 'lib/blobfolio/domain/data.php';
 
 
 
