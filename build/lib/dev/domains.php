@@ -26,45 +26,18 @@ class domains extends \blobfolio\bob\base\build {
 
 	// Intl should catch this, but just in case...
 	const REQUIRED_FUNCTIONS = array('idn_to_ascii');
+	const DOWNLOADS = array('https://publicsuffix.org/list/public_suffix_list.dat');
 
 	// We aren't using binaries or build steps.
 	const SKIP_BINARY_DEPENDENCIES = true;
 	const SKIP_BUILD = false;
-	const SKIP_FILE_DEPENDENCIES = false;
+	const SKIP_FILE_DEPENDENCIES = true;
 	const SKIP_PACKAGE = true;
 
 	// MaxMind URLs.
 	const DATA_TEMPLATE = BLOBWP_BUILD_DIR . 'skel/data.template';
 	const DATA_SOURCE = 'https://publicsuffix.org/list/public_suffix_list.dat';
 	const DATA_OUT = BLOBWP_ROOT_DIR . 'lib/blobfolio/domain/data.php';
-
-	protected static $local;
-
-
-
-	// -----------------------------------------------------------------
-	// Files
-	// -----------------------------------------------------------------
-
-	/**
-	 * Pre-Files
-	 *
-	 * This runs before required file checks.
-	 *
-	 * @return void Nothing.
-	 */
-	protected static function pre_get_files() {
-		// Download the sources.
-		utility::log('Downloading suffix data…');
-		$tmp = utility::get_remote(static::DATA_SOURCE);
-		if (!isset($tmp[static::DATA_SOURCE]) || !$tmp[static::DATA_SOURCE]) {
-			utility::log('Could not get the data.', 'error');
-		}
-
-		static::$local = $tmp[static::DATA_SOURCE];
-	}
-
-	// ----------------------------------------------------------------- end files
 
 
 
@@ -81,7 +54,7 @@ class domains extends \blobfolio\bob\base\build {
 		utility::log('Loading data…');
 
 		// Load the data.
-		$data = file_get_contents(static::$local);
+		$data = file_get_contents(static::$downloads[static::DATA_SOURCE]);
 
 		// We want to cut out the ICANN bits. If these strings don't
 		// exist, there's something wrong.
