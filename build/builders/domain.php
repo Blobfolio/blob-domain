@@ -17,44 +17,56 @@
 
 namespace blobfolio\dev;
 
+use \blobfolio\bob\format;
+use \blobfolio\bob\io;
+use \blobfolio\bob\log;
 use \blobfolio\common\mb as v_mb;
 use \blobfolio\common\ref\sanitize as r_sanitize;
-use \blobfolio\bob\utility;
 
-class domains extends \blobfolio\bob\base\build {
-	const NAME = 'domains';
+class domain extends \blobfolio\bob\base\mike {
+	// Project Name.
+	const NAME = 'blob-domain';
+	const DESCRIPTION = 'blob-domain is a simple PHP library for parsing and validating domain names. It supports the full Public Suffix ruleset, translates Unicode to ASCII or vice versa (if the PHP extension INTL is present), and can break down a host into its constituent parts: subdomain, domain, and suffix.';
+	const CONFIRMATION = '';
+	const SLUG = '';
 
-	// Intl should catch this, but just in case...
+	// Runtime requirements.
 	const REQUIRED_FUNCTIONS = array('idn_to_ascii');
-	const DOWNLOADS = array('https://publicsuffix.org/list/public_suffix_list.dat');
 
-	// We aren't using binaries or build steps.
-	const SKIP_BINARY_DEPENDENCIES = true;
-	const SKIP_BUILD = false;
-	const SKIP_FILE_DEPENDENCIES = true;
-	const SKIP_PACKAGE = true;
+	const REQUIRED_DOWNLOADS = array(
+		'https://publicsuffix.org/list/public_suffix_list.dat',
+	);
 
-	// MaxMind URLs.
-	const DATA_TEMPLATE = BOB_BUILD_DIR . 'skel/data.template';
-	const DATA_SOURCE = 'https://publicsuffix.org/list/public_suffix_list.dat';
-	const DATA_OUT = BOB_ROOT_DIR . 'lib/blobfolio/domain/data.php';
+	// Automatic setup.
+	const CLEAN_ON_SUCCESS = false;			// Delete tmp/bob when done.
+	const SHITLIST = null;					// Specific shitlist.
+
+	// Functions to run to complete the build, in order, grouped by
+	// heading.
+	const ACTIONS = array(
+		'Updating Data'=>array(
+			'build',
+		),
+	);
 
 
-
-	// -----------------------------------------------------------------
-	// Build
-	// -----------------------------------------------------------------
 
 	/**
-	 * Build Tasks
+	 * Build
+	 *
+	 * This is actually pretty simple; we don't need a million different
+	 * callbacks to get it built. Haha.
 	 *
 	 * @return void Nothing.
 	 */
-	protected static function build_tasks() {
-		utility::log('Loading data…');
+	public static function build() {
+		if (!defined('BOB_ROOT_DIR')) {
+			log::error('Missing root dir.');
+		}
 
-		// Load the data.
-		$data = file_get_contents(static::$downloads[static::DATA_SOURCE]);
+		log::print('Loading data…');
+
+		$data = io::get_url(static::REQUIRED_DOWNLOADS[0]);
 
 		// We want to cut out the ICANN bits. If these strings don't
 		// exist, there's something wrong.
@@ -62,7 +74,7 @@ class domains extends \blobfolio\bob\base\build {
 			(false === ($start = v_mb::strpos($data, '// ===BEGIN ICANN DOMAINS==='))) ||
 			(false === ($end = v_mb::strpos($data, '// ===END ICANN DOMAINS===')))
 		) {
-			utility::log('Unexpected data was returned.', 'error');
+			log::error('Unexpected data was returned.');
 		}
 
 		// Chop and sanitize.
@@ -71,7 +83,7 @@ class domains extends \blobfolio\bob\base\build {
 		$data = explode("\n", $data);
 		$data = array_filter($data, 'strlen');
 
-		utility::log('Parsing data…');
+		log::print('Parsing data…');
 
 		$suffixes = array();
 		foreach ($data as $line) {
@@ -89,11 +101,14 @@ class domains extends \blobfolio\bob\base\build {
 		}
 
 		// Note how many we found.
-		static::print_record_count(count($suffixes));
+		log::total(count($suffixes));
 
-		utility::log('Exporting data…');
+		log::print('Exporting data…');
 
-		$out = file_get_contents(static::DATA_TEMPLATE);
+		$template_file = BOB_ROOT_DIR . 'skel/data.template';
+		$out_file = dirname(BOB_ROOT_DIR) . '/lib/blobfolio/domain/data.php';
+
+		$out = file_get_contents($template_file);
 		$out = str_replace(
 			array(
 				'%GENERATED%',
@@ -101,12 +116,18 @@ class domains extends \blobfolio\bob\base\build {
 			),
 			array(
 				date('Y-m-d H:i:s'),
-				utility::array_to_php($suffixes, 2),
+				format::array_to_php($suffixes, 2),
 			),
 			$out
 		);
-		file_put_contents(static::DATA_OUT, $out);
+		file_put_contents($out_file, $out);
 	}
+
+
+
+	// -----------------------------------------------------------------
+	// Helpers
+	// -----------------------------------------------------------------
 
 	/**
 	 * Build Storage
@@ -134,25 +155,6 @@ class domains extends \blobfolio\bob\base\build {
 		if (count($new) > 0) {
 			static::build_save($old[$part], $new);
 		}
-	}
-
-	// ----------------------------------------------------------------- end build
-
-
-
-	// -----------------------------------------------------------------
-	// Helpers
-	// -----------------------------------------------------------------
-
-	/**
-	 * Record Count
-	 *
-	 * @param int $count Count.
-	 * @return void Nothing.
-	 */
-	protected static function print_record_count(int $count) {
-		$count = number_format($count, 0, '.', ',');
-		utility::log("Total TLDs: $count", 'success');
 	}
 
 	// ----------------------------------------------------------------- end helpers
