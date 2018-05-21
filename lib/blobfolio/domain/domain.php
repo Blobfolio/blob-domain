@@ -85,25 +85,21 @@ class domain {
 		else {
 			r_cast::string($host, true);
 
-			// Lock UTF-8 Casting.
-			$lock = constants::$str_lock;
-			constants::$str_lock = true;
-
-			r_mb::trim($host);
+			r_mb::trim($host, true);
 
 			// Cut off the path, if any.
 			if (false !== ($start = v_mb::strpos($host, '/'))) {
-				$host = v_mb::substr($host, 0, $start);
+				$host = v_mb::substr($host, 0, $start, true);
 			}
 
 			// Cut off the query, if any.
 			if (false !== ($start = v_mb::strpos($host, '?'))) {
-				$host = v_mb::substr($host, 0, $start);
+				$host = v_mb::substr($host, 0, $start, true);
 			}
 
 			// Cut off credentials, if any.
 			if (false !== ($start = v_mb::strpos($host, '@'))) {
-				$host = v_mb::substr($host, $start + 1);
+				$host = v_mb::substr($host, $start + 1, null, true);
 			}
 
 			// Is this an IPv6 address?
@@ -114,17 +110,16 @@ class domain {
 				(0 === strpos($host, '[')) &&
 				false !== ($end = v_mb::strpos($host, ']'))
 			) {
-				$host = v_mb::substr($host, 1, $end - 1);
+				$host = v_mb::substr($host, 1, $end - 1, true);
 				r_sanitize::ip($host, true);
 			}
 			// Cut off port, if any.
 			elseif (false !== ($start = v_mb::strpos($host, ':'))) {
-				$host = v_mb::substr($host, 0, $start);
+				$host = v_mb::substr($host, 0, $start, true);
 			}
 
 			// If it is empty or invalid, there is nothing we can do.
 			if (!strlen($host)) {
-				constants::$str_lock = false;
 				return false;
 			}
 
@@ -136,13 +131,11 @@ class domain {
 			}
 
 			// Lowercase it.
-			r_mb::strtolower($host);
+			r_mb::strtolower($host, false, true);
 
 			// Get rid of trailing periods.
 			$host = ltrim($host, '.');
 			$host = rtrim($host, '.');
-
-			constants::$str_lock = false;
 		}
 
 		// Liberate IPv6 from its walls.
@@ -166,8 +159,8 @@ class domain {
 			// Gotta have length, and can't start or end with a dash.
 			if (
 				!strlen($v) ||
-				'-' === substr($v, 0, 1) ||
-				'-' === substr($v, -1)
+				(0 === strpos($v, '-')) ||
+				('-' === substr($v, -1))
 			) {
 				return false;
 			}
@@ -331,7 +324,11 @@ class domain {
 			return !!filter_var($this->host, FILTER_VALIDATE_IP);
 		}
 
-		return !!filter_var($this->host, FILTER_VALIDATE_IP, FILTER_FLAG_NO_PRIV_RANGE | FILTER_FLAG_NO_RES_RANGE);
+		return !!filter_var(
+			$this->host,
+			FILTER_VALIDATE_IP,
+			FILTER_FLAG_NO_PRIV_RANGE | FILTER_FLAG_NO_RES_RANGE
+		);
 	}
 
 	/**
@@ -348,7 +345,11 @@ class domain {
 				$this->dns = $this->is_ip(false);
 			}
 			else {
-				$this->dns = !!filter_var(gethostbyname("{$this->host}."), FILTER_VALIDATE_IP, FILTER_FLAG_NO_PRIV_RANGE | FILTER_FLAG_NO_RES_RANGE);
+				$this->dns = !!filter_var(
+					gethostbyname("{$this->host}."),
+					FILTER_VALIDATE_IP,
+					FILTER_FLAG_NO_PRIV_RANGE | FILTER_FLAG_NO_RES_RANGE
+				);
 			}
 		}
 
