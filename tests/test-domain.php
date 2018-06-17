@@ -8,6 +8,7 @@
  * @author	Blobfolio, LLC <hello@blobfolio.com>
  */
 
+use \blobfolio\common\constants;
 use \blobfolio\domain\domain;
 
 /**
@@ -15,317 +16,803 @@ use \blobfolio\domain\domain;
  */
 class domain_tests extends \PHPUnit\Framework\TestCase {
 
+	// -----------------------------------------------------------------
+	// Set up
+	// -----------------------------------------------------------------
+
 	/**
-	 * ::parse_host()
+	 * Before Test
+	 *
+	 * String cast bypass should be off before the test.
 	 *
 	 * @return void Nothing.
 	 */
-	function test_parse_host() {
-		$things = array(
-			'http://☺.com',
-			'//☺.com',
-			'☺.com',
-			'☺.com.',
-			'.☺.com',
-		);
+	protected function setUp() {
+		$this->assertFalse(constants::$str_lock);
+	}
 
-		foreach ($things as $thing) {
-			$host = domain::parse_host($thing);
-			if (function_exists('idn_to_ascii')) {
-				$this->assertEquals('xn--74h.com', $host);
-			}
-			else {
-				$this->assertEquals('☺.com', $host);
-			}
+	/**
+	 * After Test
+	 *
+	 * String cast bypass should still be off after the test.
+	 *
+	 * @return void Nothing.
+	 */
+	protected function tearDown() {
+		$this->assertFalse(constants::$str_lock);
+	}
+
+	// ----------------------------------------------------------------- end setup
+
+
+
+	// -----------------------------------------------------------------
+	// Tests
+	// -----------------------------------------------------------------
+
+	/**
+	 * ::parse_host()
+	 *
+	 * @dataProvider data_parse_host
+	 *
+	 * @param string $host Host.
+	 * @param mixed $expected_intl Expected.
+	 * @param mixed $expected Expected.
+	 * @return void Nothing.
+	 */
+	function test_parse_host(string $host, $expected_intl, $expected) {
+		$result = domain::parse_host($host);
+
+		if (function_exists('idn_to_ascii')) {
+			$this->assertSame($expected_intl, $result);
 		}
-
-		$thing = 'localhost';
-		$this->assertEquals($thing, domain::parse_host($thing));
-
-		$thing = 'http://josh:here@[2600:3c00::f03c:91ff:feae:0ff2]:443/foobar';
-		$result = domain::parse_host($thing);
-		$this->assertEquals('2600:3c00::f03c:91ff:feae:ff2', $result);
-
-		$thing = '-localhost';
-		$this->assertEquals(false, domain::parse_host($thing));
-
-		$thing = 'local_host';
-		$this->assertEquals(false, domain::parse_host($thing));
-
-		$thing = ' localhost';
-		$this->assertEquals('localhost', domain::parse_host($thing));
+		else {
+			$this->assertSame($expected, $result);
+		}
 	}
 
 	/**
 	 * ::parse_host_parts()
 	 *
+	 * @dataProvider data_parse_host_parts
+	 *
+	 * @param string $host Host.
+	 * @param mixed $expected Expected.
 	 * @return void Nothing.
 	 */
-	function test_parse_host_parts() {
-		$things = array(
-			'.com'=>false,
-			'eXample.com'=>array(
-				'host'=>'example.com',
-				'subdomain'=>null,
-				'domain'=>'example',
-				'suffix'=>'com',
-			),
-			'www.example.com'=>array(
-				'host'=>'www.example.com',
-				'subdomain'=>'www',
-				'domain'=>'example',
-				'suffix'=>'com',
-			),
-			'www.example.co.uk'=>array(
-				'host'=>'www.example.co.uk',
-				'subdomain'=>'www',
-				'domain'=>'example',
-				'suffix'=>'co.uk',
-			),
-			'co.uk'=>false,
-			'www.example.sch.uk'=>array(
-				'host'=>'www.example.sch.uk',
-				'subdomain'=>null,
-				'domain'=>'www',
-				'suffix'=>'example.sch.uk',
-			),
-		);
-
-		foreach ($things as $k=>$v) {
-			$parts = domain::parse_host_parts($k);
-			$this->assertEquals($v, $parts);
-		}
+	function test_parse_host_parts(string $host, $expected) {
+		$this->assertSame($expected, domain::parse_host_parts($host));
 	}
 
 	/**
 	 * ->__toString()
 	 *
+	 * @dataProvider data_toString
+	 *
+	 * @param string $host Host.
+	 * @param string $expected Expected.
 	 * @return void Nothing.
 	 */
-	function test_toString() {
-		$thing = 'www.example.sch.uk';
-		$result = new domain($thing);
-		$result = (string) $result;
-		$this->assertEquals($thing, $result);
-
-		$thing = 'com';
-		$result = new domain($thing);
-		$result = (string) $result;
-		$this->assertEquals('', $result);
+	function test_toString(string $host, string $expected) {
+		$thing = new domain($host);
+		$thing = (string) $thing;
+		$this->assertSame($expected, $thing);
 	}
 
 	/**
 	 * ->is_valid()
 	 *
+	 * @dataProvider data_is_valid
+	 *
+	 * @param string $host Host.
+	 * @param bool $fqdn FQDN.
+	 * @param bool $expected Expected.
 	 * @return void Nothing.
 	 */
-	function test_is_valid() {
-		$thing = new domain('example.com');
-		$this->assertEquals(true, $thing->is_valid());
-
-		$thing = new domain('com');
-		$this->assertEquals(false, $thing->is_valid());
-
-		// FQDN.
-		$thing = new domain('blobfolio.com');
-		$this->assertEquals(true, $thing->is_valid(true));
-
-		// IP.
-		$thing = new domain('127.0.0.1');
-		$this->assertEquals(true, $thing->is_valid());
-
-		// Local IP (e.g. not FQDN).
-		$thing = new domain('127.0.0.1');
-		$this->assertEquals(false, $thing->is_valid(true));
+	function test_is_valid(string $host, $fqdn, bool $expected) {
+		$thing = new domain($host);
+		if (is_bool($fqdn)) {
+			$result = $thing->is_valid($fqdn);
+		}
+		else {
+			$result = $thing->is_valid();
+		}
+		$this->assertSame($expected, $result);
 	}
 
 	/**
 	 * ->is_ascii()
 	 *
+	 * @dataProvider data_is_ascii
+	 *
+	 * @param string $host Host.
+	 * @param bool $expected Expected.
 	 * @return void Nothing.
 	 */
-	function test_is_ascii() {
-		$things = array(
-			'☺.com'=>false,
-			'xn--74h.com'=>false,
-			'com'=>false,
-			'google.com'=>true,
-			'127.0.0.1'=>true,
-		);
-
-		foreach ($things as $k=>$v) {
-			$thing = new domain($k);
-			$this->assertEquals($v, $thing->is_ascii());
-		}
+	function test_is_ascii(string $host, bool $expected) {
+		$thing = new domain($host);
+		$this->assertSame($expected, $thing->is_ascii());
 	}
 
 	/**
 	 * ->is_fqdn()
 	 *
+	 * @dataProvider data_is_fqdn
+	 *
+	 * @param string $host Host.
+	 * @param bool $expected Expected.
 	 * @return void Nothing.
 	 */
-	function test_is_fqdn() {
-		$things = array(
-			'example.com'=>true,
-			'com'=>false,
-			'localhost'=>false,
-			'127.0.0.1'=>false,
-			'2600:3c00::f03c:91ff:feae:0ff2'=>true,
-		);
-
-		foreach ($things as $k=>$v) {
-			$thing = new domain($k);
-			$this->assertEquals($v, $thing->is_fqdn());
-		}
+	function test_is_fqdn(string $host, bool $expected) {
+		$thing = new domain($host);
+		$this->assertSame($expected, $thing->is_fqdn());
 	}
 
 	/**
 	 * ->is_ip()
 	 *
+	 * @dataProvider data_is_ip
+	 *
+	 * @param string $host Host.
+	 * @param bool $restricted Allow restricted.
+	 * @param bool $expected Expected.
 	 * @return void Nothing.
 	 */
-	function test_is_ip() {
-		$thing = new domain('example.com');
-		$this->assertEquals(false, $thing->is_ip());
-
-		$thing = new domain('example.com');
-		$this->assertEquals(false, $thing->is_ip(false));
-
-		$thing = new domain('127.0.0.1');
-		$this->assertEquals(true, $thing->is_ip());
-
-		$thing = new domain('127.0.0.1');
-		$this->assertEquals(false, $thing->is_ip(false));
-
-		$thing = new domain('2600:3c00::f03c:91ff:feae:0ff2');
-		$this->assertEquals(true, $thing->is_ip());
+	function test_is_ip(string $host, $restricted, bool $expected) {
+		$thing = new domain($host);
+		if (is_bool($restricted)) {
+			$result = $thing->is_ip($restricted);
+		}
+		else {
+			$result = $thing->is_ip();
+		}
+		$this->assertSame($expected, $result);
 	}
 
 	/**
 	 * ->is_unicode()
 	 *
+	 * @dataProvider data_is_unicode
+	 *
+	 * @param string $host Host.
+	 * @param bool $expected Expected.
 	 * @return void Nothing.
 	 */
-	function test_is_unicode() {
-		$things = array(
-			'☺.com'=>true,
-			'xn--74h.com'=>true,
-			'com'=>false,
-			'google.com'=>false,
-			'127.0.0.1'=>false,
-		);
-
-		foreach ($things as $k=>$v) {
-			$thing = new domain($k);
-			$this->assertEquals($v, $thing->is_unicode());
-		}
+	function test_is_unicode(string $host, bool $expected) {
+		$thing = new domain($host);
+		$this->assertSame($expected, $thing->is_unicode());
 	}
 
 	/**
 	 * ->has_dns()
 	 *
+	 * @dataProvider data_has_dns
+	 *
+	 * @param string $host Host.
+	 * @param bool $expected Expected.
 	 * @return void Nothing.
 	 */
-	function test_has_dns() {
-		$things = array(
-			'blobfolio.com'=>true,
-			'asdfasfd.blobfolio.com'=>false,
-			'127.0.0.1'=>false,
-			'2600:3c00::f03c:91ff:feae:0ff2'=>true,
-		);
-
-		foreach ($things as $k=>$v) {
-			$thing = new domain($k);
-			$this->assertEquals($v, $thing->has_dns());
-		}
+	function test_has_dns(string $host, bool $expected) {
+		$thing = new domain($host);
+		$this->assertSame($expected, $thing->has_dns());
 	}
 
 	/**
 	 * ->strip_www()
 	 *
+	 * @dataProvider data_strip_www
+	 *
+	 * @param string $domain Domain.
+	 * @param mixed $www Strip WWW.
+	 * @param mixed $e_host Expected host.
+	 * @param mixed $e_subdomain Expected subdomain.
 	 * @return void Nothing.
 	 */
-	function test_strip_www() {
-		// Sneaky: www is really a domain here.
-		$thing = new domain('www.example.sch.uk', true);
-		$this->assertEquals('www.example.sch.uk', $thing->get_host());
+	function test_strip_www(string $domain, $www, $e_host, $e_subdomain) {
+		if (is_bool($www)) {
+			$thing = new domain($domain, $www);
+		}
+		else {
+			$thing = new domain($domain);
+		}
 
-		$thing = new domain('www.google.com', true);
-		$this->assertEquals('google.com', $thing->get_host());
-		$this->assertEquals(true, is_null($thing->get_subdomain()));
-
-		$thing = new domain('www.google.com');
-		$this->assertEquals('www.google.com', $thing->get_host());
-		$this->assertEquals(false, is_null($thing->get_subdomain()));
-
-		$thing = new domain('www.domains.google.com', true);
-		$this->assertEquals('domains.google.com', $thing->get_host());
-		$this->assertEquals('domains', $thing->get_subdomain());
+		$this->assertSame($e_host, $thing->get_host());
+		$this->assertSame($e_subdomain, $thing->get_subdomain());
 	}
 
 	/**
 	 * ->get_data()
 	 *
+	 * @dataProvider data_get_data
+	 *
+	 * @param string $domain Domain.
+	 * @param mixed $unicode Unicode.
+	 * @param mixed $expected Exected.
 	 * @return void Nothing.
 	 */
-	function test_get_data() {
-		$things = array(
-			'.com'=>false,
-			'eXample.com'=>array(
-				'host'=>'example.com',
-				'subdomain'=>null,
-				'domain'=>'example',
-				'suffix'=>'com',
-			),
-			'www.example.com'=>array(
-				'host'=>'www.example.com',
-				'subdomain'=>'www',
-				'domain'=>'example',
-				'suffix'=>'com',
-			),
-			'☺.com'=>array(
-				'host'=>'xn--74h.com',
-				'subdomain'=>null,
-				'domain'=>'xn--74h',
-				'suffix'=>'com',
-			),
-		);
+	function test_get_data(string $domain, $unicode, $expected) {
+		// Initiate the object.
+		$thing = new domain($domain);
 
-		foreach ($things as $k=>$v) {
-			$result = new domain($k);
-			$this->assertEquals($v, $result->get_data());
+		// Do we want Unicode?
+		if (is_bool($unicode)) {
+			if ($unicode && !function_exists('idn_to_utf8')) {
+				$this->markTestSkipped('The PHP intl extension is missing.');
+			}
+			$result = $thing->get_data($unicode);
 		}
-
-		if (function_exists('idn_to_utf8')) {
-			// Test Unicode.
-			$expected = array(
-				'host'=>'☺.com',
-				'subdomain'=>null,
-				'domain'=>'☺',
-				'suffix'=>'com',
-			);
-			$thing = new domain('☺.com');
-			$this->assertEquals($expected, $thing->get_data(true));
+		else {
+			$result = $thing->get_data();
 		}
+		$this->assertSame($expected, $result);
 	}
 
 	/**
 	 * ->__get()
 	 *
+	 * @dataProvider data_get
+	 *
+	 * @param string $domain Domain.
+	 * @param string $func Function.
+	 * @param mixed $unicode Unicode.
+	 * @param mixed $expected Expected.
 	 * @return void Nothing.
 	 */
-	function test_get() {
-		$thing = new domain('eXample.com');
+	function test_get(string $domain, string $func, $unicode, $expected) {
+		// Initiate the object.
+		$thing = new domain($domain);
 
-		$this->assertEquals('example.com', $thing->get_host());
-		$this->assertEquals(null, $thing->get_subdomain());
-		$this->assertEquals('example', $thing->get_domain());
-		$this->assertEquals('com', $thing->get_suffix());
+		// Only pass an argument if it isn't Null.
+		if (is_bool($unicode)) {
+			if ($unicode && !function_exists('idn_to_utf8')) {
+				$this->markTestSkipped('The PHP intl extension is missing.');
+			}
+			$result = $thing->{$func}($unicode);
+		}
+		else {
+			$result = $thing->{$func}();
+		}
 
-		$thing = new domain('☺.com');
-		$this->assertEquals('☺.com', $thing->get_host(true));
-		$this->assertEquals('xn--74h.com', $thing->get_host());
+		// Check the answer.
+		$this->assertSame($expected, $result);
 	}
+
+	// ----------------------------------------------------------------- end tests
+
+
+
+	// -----------------------------------------------------------------
+	// Data
+	// -----------------------------------------------------------------
+
+	/**
+	 * Data for ::parse_host()
+	 *
+	 * @return array Data.
+	 */
+	function data_parse_host() {
+		return array(
+			array(
+				'http://☺.com',
+				'xn--74h.com',
+				'☺.com',
+			),
+			array(
+				'//☺.com',
+				'xn--74h.com',
+				'☺.com',
+			),
+			array(
+				'☺.com',
+				'xn--74h.com',
+				'☺.com',
+			),
+			array(
+				'☺.com.',
+				'xn--74h.com',
+				'☺.com',
+			),
+			array(
+				'.☺.com',
+				'xn--74h.com',
+				'☺.com',
+			),
+			array(
+				'localhost',
+				'localhost',
+				'localhost',
+			),
+			array(
+				'http://josh:here@[2600:3c00::f03c:91ff:feae:0ff2]:443/foobar',
+				'2600:3c00::f03c:91ff:feae:ff2',
+				'2600:3c00::f03c:91ff:feae:ff2',
+			),
+			array(
+				'-localhost',
+				false,
+				false,
+			),
+			array(
+				'local_host',
+				false,
+				false,
+			),
+			array(
+				' localhost',
+				'localhost',
+				'localhost',
+			),
+		);
+	}
+
+	/**
+	 * Data for ::parse_host_parts()
+	 *
+	 * @return array Data.
+	 */
+	function data_parse_host_parts() {
+		return array(
+			array(
+				'.com',
+				false,
+			),
+			array(
+				'eXample.com',
+				array(
+					'host'=>'example.com',
+					'subdomain'=>null,
+					'domain'=>'example',
+					'suffix'=>'com',
+				),
+			),
+			array(
+				'www.example.com',
+				array(
+					'host'=>'www.example.com',
+					'subdomain'=>'www',
+					'domain'=>'example',
+					'suffix'=>'com',
+				),
+			),
+			array(
+				'www.example.co.uk',
+				array(
+					'host'=>'www.example.co.uk',
+					'subdomain'=>'www',
+					'domain'=>'example',
+					'suffix'=>'co.uk',
+				),
+			),
+			array(
+				'co.uk',
+				false,
+			),
+			array(
+				'www.example.sch.uk',
+				array(
+					'host'=>'www.example.sch.uk',
+					'subdomain'=>null,
+					'domain'=>'www',
+					'suffix'=>'example.sch.uk',
+				),
+			),
+			array(
+				'☺.com',
+				array(
+					'host'=>'xn--74h.com',
+					'subdomain'=>null,
+					'domain'=>'xn--74h',
+					'suffix'=>'com',
+				),
+			),
+		);
+	}
+
+	/**
+	 * Data for ->toString()
+	 *
+	 * @return array Data.
+	 */
+	function data_toString() {
+		return array(
+			array(
+				'www.example.sch.uk',
+				'www.example.sch.uk',
+			),
+			array(
+				'com',
+				'',
+			),
+			array(
+				'www.eXample.com',
+				'www.example.com',
+			),
+			array(
+				'☺.com',
+				'xn--74h.com',
+			),
+		);
+	}
+
+	/**
+	 * Data for ->is_valid()
+	 *
+	 * @return array Data.
+	 */
+	function data_is_valid() {
+		return array(
+			array(
+				'example.com',
+				null,
+				true,
+			),
+			array(
+				'com',
+				null,
+				false,
+			),
+			array(
+				'blobfolio.com',
+				true,
+				true,
+			),
+			array(
+				'127.0.0.1',
+				null,
+				true,
+			),
+			array(
+				'127.0.0.1',
+				true,
+				false,
+			),
+			array(
+				'☺.com',
+				true,
+				true,
+			),
+		);
+	}
+
+	/**
+	 * Data for ->is_ascii()
+	 *
+	 * @return array Data.
+	 */
+	function data_is_ascii() {
+		return array(
+			array(
+				'example.com',
+				true,
+			),
+			array(
+				'☺.com',
+				false,
+			),
+			array(
+				'xn--74h.com',
+				false,
+			),
+			array(
+				'127.0.0.1',
+				true,
+			),
+			array(
+				'2600:3c00::f03c:91ff:feae:0ff2',
+				true,
+			),
+			array(
+				'google.com',
+				true,
+			),
+			array(
+				'com',
+				false,
+			),
+		);
+	}
+
+	/**
+	 * Data for ->is_fqdn()
+	 *
+	 * @return array Data.
+	 */
+	function data_is_fqdn() {
+		return array(
+			array(
+				'example.com',
+				true,
+			),
+			array(
+				'com',
+				false,
+			),
+			array(
+				'localhost',
+				false,
+			),
+			array(
+				'127.0.0.1',
+				false,
+			),
+			array(
+				'2600:3c00::f03c:91ff:feae:0ff2',
+				true,
+			),
+		);
+	}
+
+	/**
+	 * Data for ->is_ip()
+	 *
+	 * @return array Data.
+	 */
+	function data_is_ip() {
+		return array(
+			array(
+				'example.com',
+				false,
+				false,
+			),
+			array(
+				'example.com',
+				null,
+				false,
+			),
+			array(
+				'127.0.0.1',
+				null,
+				true,
+			),
+			array(
+				'127.0.0.1',
+				false,
+				false,
+			),
+			array(
+				'127.0.0.1',
+				true,
+				true,
+			),
+			array(
+				'2600:3c00::f03c:91ff:feae:0ff2',
+				false,
+				true,
+			),
+		);
+	}
+
+	/**
+	 * Data for ->is_unicode()
+	 *
+	 * @return array Data.
+	 */
+	function data_is_unicode() {
+		return array(
+			array(
+				'blobfolio.com',
+				false,
+			),
+			array(
+				'☺.com',
+				true,
+			),
+			array(
+				'xn--74h.com',
+				true,
+			),
+			array(
+				'com',
+				false,
+			),
+			array(
+				'googlE.com',
+				false,
+			),
+			array(
+				'127.0.0.1',
+				false,
+			),
+		);
+	}
+
+	/**
+	 * Data for ->has_dns()
+	 *
+	 * @return array Data.
+	 */
+	function data_has_dns() {
+		return array(
+			array(
+				'blobfolio.com',
+				true,
+			),
+			array(
+				'asdfasfd.blobfolio.com',
+				false,
+			),
+			array(
+				'127.0.0.1',
+				false,
+			),
+			array(
+				'2600:3c00::f03c:91ff:feae:0ff2',
+				true,
+			),
+		);
+	}
+
+	/**
+	 * Data for ->strip_www()
+	 *
+	 * @return array Data.
+	 */
+	function data_strip_www() {
+		return array(
+			// This is a curve ball; in this case, "www" is a domain.
+			array(
+				'www.example.sch.uk',
+				true,
+				'www.example.sch.uk',
+				null,
+			),
+			array(
+				'www.google.com',
+				true,
+				'google.com',
+				null,
+			),
+			array(
+				'www.google.com',
+				null,
+				'www.google.com',
+				'www',
+			),
+			array(
+				'www.google.com',
+				false,
+				'www.google.com',
+				'www',
+			),
+			array(
+				'www.domains.google.com',
+				true,
+				'domains.google.com',
+				'domains',
+			),
+			array(
+				'www.domains.google.com',
+				false,
+				'www.domains.google.com',
+				'www.domains',
+			),
+		);
+	}
+
+	/**
+	 * Data for ->get_data()
+	 *
+	 * @return array Data.
+	 */
+	function data_get_data() {
+		return array(
+			array(
+				'.com',
+				null,
+				false,
+			),
+			array(
+				'eXample.com',
+				null,
+				array(
+					'host'=>'example.com',
+					'subdomain'=>null,
+					'domain'=>'example',
+					'suffix'=>'com',
+				),
+			),
+			array(
+				'www.eXample.com',
+				null,
+				array(
+					'host'=>'www.example.com',
+					'subdomain'=>'www',
+					'domain'=>'example',
+					'suffix'=>'com',
+				),
+			),
+			array(
+				'☺.com',
+				null,
+				array(
+					'host'=>'xn--74h.com',
+					'subdomain'=>null,
+					'domain'=>'xn--74h',
+					'suffix'=>'com',
+				),
+			),
+			array(
+				'☺.com',
+				false,
+				array(
+					'host'=>'xn--74h.com',
+					'subdomain'=>null,
+					'domain'=>'xn--74h',
+					'suffix'=>'com',
+				),
+			),
+			array(
+				'☺.com',
+				true,
+				array(
+					'host'=>'☺.com',
+					'subdomain'=>null,
+					'domain'=>'☺',
+					'suffix'=>'com',
+				),
+			),
+		);
+	}
+
+	/**
+	 * Data for ->get()
+	 *
+	 * @return array Data.
+	 */
+	function data_get() {
+		return array(
+			array(
+				'eXample.com',
+				'get_host',
+				null,
+				'example.com',
+			),
+			array(
+				'eXample.com',
+				'get_subdomain',
+				null,
+				null,
+			),
+			array(
+				'eXample.com',
+				'get_domain',
+				null,
+				'example',
+			),
+			array(
+				'eXample.com',
+				'get_suffix',
+				null,
+				'com',
+			),
+			array(
+				'☺.com',
+				'get_host',
+				true,
+				'☺.com',
+			),
+			array(
+				'☺.com',
+				'get_host',
+				false,
+				'xn--74h.com',
+			),
+			array(
+				'☺.com',
+				'get_domain',
+				null,
+				'xn--74h',
+			),
+			array(
+				'☺.com',
+				'get_domain',
+				true,
+				'☺',
+			),
+		);
+	}
+
+	// ----------------------------------------------------------------- end data
 }
 
 

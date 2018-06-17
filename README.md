@@ -26,7 +26,7 @@ blob-domain is a simple PHP library for parsing and validating domain names. It 
 
 ## Requirements
 
-blob-domain and its dependencies require PHP 5.6+ with the following modules:
+blob-domain and its dependencies require PHP 7.0+ with the following modules:
 
  * BCMath
  * DOM
