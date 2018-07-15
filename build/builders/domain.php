@@ -121,6 +121,11 @@ class domain extends \blobfolio\bob\base\mike {
 			$out
 		);
 		file_put_contents($out_file, $out);
+
+		// Save a JSON copy to the build root.
+		$out = json_encode($suffixes);
+		$out_file = dirname(BOB_ROOT_DIR) . '/bin/blob-domains.json';
+		file_put_contents($out_file, $out);
 	}
 
 
