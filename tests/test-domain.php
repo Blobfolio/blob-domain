@@ -8,8 +8,8 @@
  * @author	Blobfolio, LLC <hello@blobfolio.com>
  */
 
-use \blobfolio\common\constants;
-use \blobfolio\domain\domain;
+use blobfolio\common\constants;
+use blobfolio\domain\domain;
 
 /**
  * Test Suite
@@ -63,7 +63,7 @@ class domain_tests extends \PHPUnit\Framework\TestCase {
 	function test_parse_host(string $host, $expected_intl, $expected) {
 		$result = domain::parse_host($host);
 
-		if (function_exists('idn_to_ascii')) {
+		if (\function_exists('idn_to_ascii')) {
 			$this->assertSame($expected_intl, $result);
 		}
 		else {
@@ -111,7 +111,7 @@ class domain_tests extends \PHPUnit\Framework\TestCase {
 	 */
 	function test_is_valid(string $host, $fqdn, bool $expected) {
 		$thing = new domain($host);
-		if (is_bool($fqdn)) {
+		if (\is_bool($fqdn)) {
 			$result = $thing->is_valid($fqdn);
 		}
 		else {
@@ -160,7 +160,7 @@ class domain_tests extends \PHPUnit\Framework\TestCase {
 	 */
 	function test_is_ip(string $host, $restricted, bool $expected) {
 		$thing = new domain($host);
-		if (is_bool($restricted)) {
+		if (\is_bool($restricted)) {
 			$result = $thing->is_ip($restricted);
 		}
 		else {
@@ -209,7 +209,7 @@ class domain_tests extends \PHPUnit\Framework\TestCase {
 	 * @return void Nothing.
 	 */
 	function test_strip_www(string $domain, $www, $e_host, $e_subdomain) {
-		if (is_bool($www)) {
+		if (\is_bool($www)) {
 			$thing = new domain($domain, $www);
 		}
 		else {
@@ -235,8 +235,8 @@ class domain_tests extends \PHPUnit\Framework\TestCase {
 		$thing = new domain($domain);
 
 		// Do we want Unicode?
-		if (is_bool($unicode)) {
-			if ($unicode && !function_exists('idn_to_utf8')) {
+		if (\is_bool($unicode)) {
+			if ($unicode && ! \function_exists('idn_to_utf8')) {
 				$this->markTestSkipped('The PHP intl extension is missing.');
 			}
 			$result = $thing->get_data($unicode);
@@ -263,8 +263,8 @@ class domain_tests extends \PHPUnit\Framework\TestCase {
 		$thing = new domain($domain);
 
 		// Only pass an argument if it isn't Null.
-		if (is_bool($unicode)) {
-			if ($unicode && !function_exists('idn_to_utf8')) {
+		if (\is_bool($unicode)) {
+			if ($unicode && ! \function_exists('idn_to_utf8')) {
 				$this->markTestSkipped('The PHP intl extension is missing.');
 			}
 			$result = $thing->{$func}($unicode);

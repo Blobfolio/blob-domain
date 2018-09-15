@@ -17,11 +17,11 @@
 
 namespace blobfolio\dev;
 
-use \blobfolio\bob\format;
-use \blobfolio\bob\io;
-use \blobfolio\bob\log;
-use \blobfolio\common\mb as v_mb;
-use \blobfolio\common\ref\sanitize as r_sanitize;
+use blobfolio\bob\format;
+use blobfolio\bob\io;
+use blobfolio\bob\log;
+use blobfolio\common\mb as v_mb;
+use blobfolio\common\ref\sanitize as r_sanitize;
 
 class domain extends \blobfolio\bob\base\mike {
 	// Project Name.
@@ -60,7 +60,7 @@ class domain extends \blobfolio\bob\base\mike {
 	 * @return void Nothing.
 	 */
 	public static function build() {
-		if (!defined('BOB_ROOT_DIR')) {
+		if (! \defined('BOB_ROOT_DIR')) {
 			log::error('Missing root dir.');
 		}
 
@@ -80,52 +80,52 @@ class domain extends \blobfolio\bob\base\mike {
 		// Chop and sanitize.
 		$data = v_mb::substr($data, $start, ($end - $start));
 		r_sanitize::whitespace($data, 1);
-		$data = explode("\n", $data);
-		$data = array_filter($data, 'strlen');
+		$data = \explode("\n", $data);
+		$data = \array_filter($data, 'strlen');
 
 		log::print('Parsing data…');
 
 		$suffixes = array();
 		foreach ($data as $line) {
 			// Skip comments.
-			if (0 === strpos($line, '//')) {
+			if (0 === \strpos($line, '//')) {
 				continue;
 			}
 
 			// Tease out the parts.
-			$parts = preg_replace('/^!/', '!.', $line);
-			$parts = explode('.', $parts);
+			$parts = \preg_replace('/^!/', '!.', $line);
+			$parts = \explode('.', $parts);
 
 			// Recurse.
 			static::build_save($suffixes, $parts);
 		}
 
 		// Note how many we found.
-		log::total(count($suffixes));
+		log::total(\count($suffixes));
 
 		log::print('Exporting data…');
 
-		$template_file = BOB_ROOT_DIR . 'skel/data.template';
-		$out_file = dirname(BOB_ROOT_DIR) . '/lib/blobfolio/domain/data.php';
+		$template_file = \BOB_ROOT_DIR . 'skel/data.template';
+		$out_file = \dirname(\BOB_ROOT_DIR) . '/lib/blobfolio/domain/data.php';
 
-		$out = file_get_contents($template_file);
-		$out = str_replace(
+		$out = \file_get_contents($template_file);
+		$out = \str_replace(
 			array(
 				'%GENERATED%',
 				'%SUFFIXES%',
 			),
 			array(
-				date('Y-m-d H:i:s'),
+				\date('Y-m-d H:i:s'),
 				format::array_to_php($suffixes, 2),
 			),
 			$out
 		);
-		file_put_contents($out_file, $out);
+		\file_put_contents($out_file, $out);
 
 		// Save a JSON copy to the build root.
-		$out = json_encode($suffixes);
-		$out_file = dirname(BOB_ROOT_DIR) . '/bin/blob-domains.json';
-		file_put_contents($out_file, $out);
+		$out = \json_encode($suffixes);
+		$out_file = \dirname(\BOB_ROOT_DIR) . '/bin/blob-domains.json';
+		\file_put_contents($out_file, $out);
 	}
 
 
@@ -143,21 +143,21 @@ class domain extends \blobfolio\bob\base\mike {
 	 */
 	protected static function build_save(&$old, $new) {
 		// Ignore bad data.
-		if (!is_array($old) || !is_array($new)) {
+		if (! \is_array($old) || ! \is_array($new)) {
 			return;
 		}
 
 		// Pop off the end.
-		$part = array_pop($new);
-		$part = idn_to_ascii($part);
+		$part = \array_pop($new);
+		$part = \idn_to_ascii($part);
 
 		// If it doesn't exist, it's a new base.
-		if (!isset($old[$part])) {
+		if (! isset($old[$part])) {
 			$old[$part] = array();
 		}
 
 		// If there are other parts, do it all over again.
-		if (count($new) > 0) {
+		if (\count($new) > 0) {
 			static::build_save($old[$part], $new);
 		}
 	}
