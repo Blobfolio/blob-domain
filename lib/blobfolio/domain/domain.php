@@ -85,21 +85,21 @@ class domain {
 		else {
 			r_cast::string($host, true);
 
-			r_mb::trim($host, true);
+			r_mb::trim($host);
 
 			// Cut off the path, if any.
 			if (false !== ($start = v_mb::strpos($host, '/'))) {
-				$host = v_mb::substr($host, 0, $start, true);
+				$host = v_mb::substr($host, 0, $start);
 			}
 
 			// Cut off the query, if any.
 			if (false !== ($start = v_mb::strpos($host, '?'))) {
-				$host = v_mb::substr($host, 0, $start, true);
+				$host = v_mb::substr($host, 0, $start);
 			}
 
 			// Cut off credentials, if any.
 			if (false !== ($start = v_mb::strpos($host, '@'))) {
-				$host = v_mb::substr($host, $start + 1, null, true);
+				$host = v_mb::substr($host, $start + 1, null);
 			}
 
 			// Is this an IPv6 address?
@@ -110,12 +110,12 @@ class domain {
 				(0 === strpos($host, '[')) &&
 				false !== ($end = v_mb::strpos($host, ']'))
 			) {
-				$host = v_mb::substr($host, 1, $end - 1, true);
+				$host = v_mb::substr($host, 1, $end - 1);
 				r_sanitize::ip($host, true);
 			}
 			// Cut off port, if any.
 			elseif (false !== ($start = v_mb::strpos($host, ':'))) {
-				$host = v_mb::substr($host, 0, $start, true);
+				$host = v_mb::substr($host, 0, $start);
 			}
 
 			// If it is empty or invalid, there is nothing we can do.
@@ -131,7 +131,7 @@ class domain {
 			}
 
 			// Lowercase it.
-			r_mb::strtolower($host, false, true);
+			r_mb::strtolower($host, false);
 
 			// Get rid of trailing periods.
 			$host = ltrim($host, '.');
